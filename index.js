@@ -1,5 +1,5 @@
 const express = require('express');
- const cors  = require('cors');
+const cors = require('cors');
 //   cors por space ===>cant find cors showing ***
 
 require('dotenv').config();
@@ -9,12 +9,12 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 
 
 const app = express();
-const port= process.env.PORT || 3000 ; 
+const port = process.env.PORT || 3000;
 
 
 
 app.use(cors());
-app.use (express.json()); 
+app.use(express.json());
 
 
 
@@ -34,10 +34,41 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const plantsCollection = client.db('plantDB').collection('plants')
+
+
+
+    app.get('/plants', async (req, res) => {
+      const result = await plantsCollection.find().toArray();
+      res.send(result);
+    })
+
+
+
+    app.post('/plants', async (req, res) => {
+
+      const newPlant = req.body;
+
+      const result = await plantsCollection.insertOne(newPlant);
+      res.send(result);
+    })
+
+
+
+
+
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
+  }
+
+
+
+  finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
@@ -46,13 +77,13 @@ run().catch(console.dir);
 
 
 
-app.get('/' , (req, res)=> {
+app.get('/', (req, res) => {
 
-res.send ('plant server is getting ready')
+  res.send('plant server is getting ready')
 
-}) ;
+});
 
-app.listen (port, ()=>{
-console.log(`plant server is running on port ${port}`);
+app.listen(port, () => {
+  console.log(`plant server is running on port ${port}`);
 
 })
