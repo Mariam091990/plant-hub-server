@@ -5,7 +5,7 @@ const cors = require('cors');
 require('dotenv').config();
 //  console.log(process.env.DB_USER);
 //  console.log(process.env.DB_PASS);
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 const app = express();
@@ -38,9 +38,18 @@ async function run() {
     const plantsCollection = client.db('plantDB').collection('plants')
 
 
+    // read all data
 
     app.get('/plants', async (req, res) => {
       const result = await plantsCollection.find().toArray();
+      res.send(result);
+    })
+
+    // read a specific data for update operation
+
+    app.get("/plants/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await plantsCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
     })
 
@@ -49,11 +58,46 @@ async function run() {
     app.post('/plants', async (req, res) => {
 
       const newPlant = req.body;
-
       const result = await plantsCollection.insertOne(newPlant);
       res.send(result);
     })
 
+
+    app.put('/plants/:id', async (req, res) => {
+
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedPlant = req.body;
+      const updatedDoc = {
+        $set: updatedPlant
+      }
+
+      //       // const updatedDoc ={
+      //      $set :{
+      //           name: updatedPlant.name,
+      //          category: updatedPlant.category,
+      //         ...
+      //         ...
+      // eivabe each name r value likha jay elaborately likhle .kintu ta drkr nai karon updatedPlant j send kora holo fronend theke req.body te kore. inspec e dekle dekha jabe amoni ekta object send korche tai back end eivabe vengge likha drkr nai.
+      //      }  
+      // }
+
+      const result = await plantsCollection.updateOne(filter, updatedDoc, options);
+      res.send(result);
+
+
+    })
+
+
+    app.delete('/plants/:id', async (req, res) => {
+
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await plantsCollection.deleteOne(query);
+      res.send(result);
+
+    })
 
 
 
